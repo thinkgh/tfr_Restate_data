@@ -1,0 +1,4 @@
+/input_csv/
+/output/
+/realestate_crawl/__pycache__/
+/realestate_crawl/spiders/__pycache__/

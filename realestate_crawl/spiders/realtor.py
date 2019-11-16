@@ -8,8 +8,8 @@ import requests
 from scrapy import Spider, Request
 import urllib.request
 import urllib.parse
-from realestate_crawl.settings import INPUT_DIR
-from realestate_crawl.utils import get_proxy_dict, download_image, get_output_folder_for_location_id, format_proxy
+from realestate_crawl.settings import INPUT_DIR, IMAGES_OUT_DIR
+from realestate_crawl.utils import get_proxy_dict, download_image, mkdir, format_proxy
 
 
 class RealtorSpider(Spider):
@@ -30,6 +30,8 @@ class RealtorSpider(Spider):
     }
 
     def start_requests(self):
+        self.output_dir = IMAGES_OUT_DIR + '/' + self.file_name.split('.')[0]
+        mkdir(self.output_dir)
         reqs = []
 
         with open(INPUT_DIR + '/' + self.file_name, 'r') as addr_file:
@@ -71,14 +73,13 @@ class RealtorSpider(Spider):
                 }
             )
             return
-        output_folder_for_location_id = get_output_folder_for_location_id(response)
 
         location_id = response.meta['address']['locationId']
         for index, img in enumerate(response.css('#ldpHeroCarousel img::attr(data-src)').extract()):
             proxy_dict = get_proxy_dict()
             download_image(
                 img,
-                image_folder=output_folder_for_location_id,
+                image_folder=self.output_dir + '/' + location_id,
                 file_name="{}_realtor_{}.jpg".format(location_id, index),
                 proxy_dict=proxy_dict
             )

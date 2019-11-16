@@ -28,6 +28,8 @@ class RedfinSpider(scrapy.Spider):
     }
 
     def start_requests(self):
+        self.output_dir = IMAGES_OUT_DIR + '/' + self.file_name.split('.')[0]
+        mkdir(self.output_dir)
         reqs = []
         with open(INPUT_DIR + '/' + self.file_name, 'r') as addr_file:
             addresses = csv.DictReader(addr_file)
@@ -83,7 +85,7 @@ class RedfinSpider(scrapy.Spider):
     def download_image(self, url, file_name, location_id, proxy_dict):
         print('Download :', url)
         downloaded = requests.get(url, proxies=proxy_dict)
-        image_folder = IMAGES_OUT_DIR + '/' + location_id
+        image_folder = self.output_dir + '/' + location_id
         mkdir(image_folder)
         with open(image_folder + "/{}".format(file_name), 'wb+') as out_file:
             out_file.write(downloaded.content)

@@ -2,3 +2,8 @@
 /output/
 /realestate_crawl/__pycache__/
 /realestate_crawl/spiders/__pycache__/
+/dbs/
+/logs/
+/twistd.pid
+/project.egg-info/
+/build/

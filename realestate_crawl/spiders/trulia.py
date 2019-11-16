@@ -43,6 +43,8 @@ class TruliaSpider(scrapy.Spider):
     }
 
     def start_requests(self):
+        self.output_dir = IMAGES_OUT_DIR + '/' + self.file_name.split('.')[0]
+        mkdir(self.output_dir)
         reqs = []
         with open(INPUT_DIR + '/' + self.file_name, 'r') as addr_file:
             addresses = csv.DictReader(addr_file)
@@ -124,7 +126,7 @@ class TruliaSpider(scrapy.Spider):
                 for i, photo_url in enumerate(photo_urls):
                     download_image(
                         url=photo_url, 
-                        image_folder=IMAGES_OUT_DIR + '/' + location_id,
+                        image_folder=self.output_dir + '/' + location_id,
                         file_name='{}_trulia_{}.jpg'.format(location_id, i),
                         proxy_dict=proxy_dict
                     )

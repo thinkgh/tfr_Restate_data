@@ -25,6 +25,8 @@ class HarSpider(scrapy.Spider):
     count = 0
 
     def start_requests(self):
+        self.output_dir = IMAGES_OUT_DIR + '/' + self.file_name.split('.')[0]
+        mkdir(self.output_dir)
         requests = []
         with open(INPUT_DIR + '/' + self.file_name, 'r') as f:
             addresses = csv.DictReader(f)
@@ -63,7 +65,7 @@ class HarSpider(scrapy.Spider):
             for i, image_url in enumerate(image_urls):
                 download_image(
                     url=image_url,
-                    image_folder=IMAGES_OUT_DIR + '/' + location_id,
+                    image_folder=self.output_dir + '/' + location_id,
                     file_name='{}_har_{}.jpg'.format(location_id, i)
                 )
         else:

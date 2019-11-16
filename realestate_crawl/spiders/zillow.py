@@ -8,8 +8,8 @@ import requests
 from scrapy import Spider, Request, Item, Field, FormRequest
 import urllib.request
 import urllib.parse
-from realestate_crawl.settings import INPUT_DIR, OUTPUT_DIR
-from realestate_crawl.utils import format_proxy, download_image, get_output_folder_for_location_id
+from realestate_crawl.settings import INPUT_DIR, OUTPUT_DIR, IMAGES_OUT_DIR
+from realestate_crawl.utils import format_proxy, download_image, mkdir
 
 
 class ZillowSpider(Spider):
@@ -32,6 +32,8 @@ class ZillowSpider(Spider):
     }
 
     def start_requests(self):
+        self.output_dir = IMAGES_OUT_DIR + '/' + self.file_name.split('.')[0]
+        mkdir(self.output_dir)
         reqs = []
 
         with open(INPUT_DIR + '/' + self.file_name, 'r') as addr_file:
@@ -65,7 +67,6 @@ class ZillowSpider(Spider):
             return
         raw_urls = re.findall(r"mediumImageLink.*?(\[.*?\])", response.text)
 
-        output_folder_for_location_id = get_output_folder_for_location_id(response)
         location_id = response.meta['address']['locationId']
         if raw_urls:
             print(raw_urls)
@@ -80,7 +81,7 @@ class ZillowSpider(Spider):
                     }
                     download_image(
                         url=img['url'],
-                        image_folder=output_folder_for_location_id,
+                        image_folder=self.output_dir + '/' + location_id,
                         file_name='{}_zillow_{}.jpg'.format(location_id, index),
                         proxy_dict=proxy_dict
                     )

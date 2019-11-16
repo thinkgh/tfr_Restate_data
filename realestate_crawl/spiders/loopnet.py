@@ -8,8 +8,8 @@ import requests
 from scrapy import Spider, Request, Item, Field, FormRequest
 import urllib.request
 import urllib.parse
-from realestate_crawl.settings import INPUT_DIR
-from realestate_crawl.utils import format_proxy, download_image, get_output_folder_for_location_id, get_proxy_dict
+from realestate_crawl.settings import INPUT_DIR, IMAGES_OUT_DIR
+from realestate_crawl.utils import format_proxy, download_image, get_proxy_dict, mkdir
 
 
 class LoopnetSpider(Spider):
@@ -28,6 +28,8 @@ class LoopnetSpider(Spider):
     }
 
     def start_requests(self):
+        self.output_dir = IMAGES_OUT_DIR + '/' + self.file_name.split('.')[0]
+        mkdir(self.output_dir)
         reqs = []
 
         with open(INPUT_DIR + '/' + self.file_name, 'r') as addr_file:
@@ -55,8 +57,6 @@ class LoopnetSpider(Spider):
         return reqs
 
     def parse_loopnet(self, response):
-        output_folder_for_location_id = get_output_folder_for_location_id(response)
-
         images = response.css(
             '.mosaic-carousel-container ::attr(data-src)').extract()
         if images:
@@ -71,7 +71,7 @@ class LoopnetSpider(Spider):
             proxy_dict = get_proxy_dict()
             download_image(
                 url=image,
-                image_folder=output_folder_for_location_id,
+                image_folder=self.output_dir + '/' + location_id,
                 file_name="{}_loopnet_{}.jpg".format(location_id, index),
                 proxy_dict=proxy_dict,
                 headers=headers

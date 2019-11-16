@@ -12,7 +12,7 @@ import os
 
 def create_dir(name):
    if not os.path.exists(name):
-      os.mkdir(name)
+      os.mkdir(name) 
 
 BOT_NAME = 'realestate_crawl'
 
@@ -21,10 +21,10 @@ NEWSPIDER_MODULE = 'realestate_crawl.spiders'
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
 
-INPUT_DIR = PROJECT_DIR + '/input_csv'
+INPUT_DIR = os.getenv('INPUT_DIR', PROJECT_DIR + '/input_csv')
 create_dir(INPUT_DIR)
 
-OUTPUT_DIR = PROJECT_DIR + '/output'
+OUTPUT_DIR = os.getenv('OUTPUT_DIR', PROJECT_DIR + '/output')
 create_dir(OUTPUT_DIR)
 IMAGES_OUT_DIR = OUTPUT_DIR + '/images'
 create_dir(IMAGES_OUT_DIR)
@@ -78,7 +78,6 @@ create_dir(IMAGES_OUT_DIR)
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-import os
 
 ITEM_PIPELINES = {
    'realestate_crawl.pipelines.RealestateCrawlPipeline': 300,

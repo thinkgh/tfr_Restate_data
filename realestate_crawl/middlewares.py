@@ -6,7 +6,8 @@
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-
+import random
+import scrapy
 
 class RealestateCrawlSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -60,6 +61,9 @@ class RealestateCrawlDownloaderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
+    count_error = 0
+    max_error_allow = 500
+    session = random.randint(1, 100000)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -69,25 +73,28 @@ class RealestateCrawlDownloaderMiddleware(object):
         return s
 
     def process_request(self, request, spider):
-        # Called for each request that goes through the downloader
-        # middleware.
-
-        # Must either:
-        # - return None: continue processing this request
-        # - or return a Response object
-        # - or return a Request object
-        # - or raise IgnoreRequest: process_exception() methods of
-        #   installed downloader middleware will be called
+        if 'need_proxy' in request.meta:
+            request.meta['proxy'] = 'http://lum-customer-timothyo-zone-zone2-session-{}:mcavv2l82le0gygh@zproxy.lum-superproxy.io:22225'.format(self.session)
         return None
 
     def process_response(self, request, response, spider):
-        # Called with the response returned from the downloader.
-
-        # Must either;
-        # - return a Response object
-        # - return a Request object
-        # - or raise IgnoreRequest
+        self.count_exception = 0
+        if response.status < 200 or response.status > 300:
+            print('Send request again because of blocking IP:', request.url)
+            self.count_error += 1
+            self._generate_new_session_for_proxy()
+            if self.count_error < self.max_error_allow:
+                self._add_need_proxy_to_meta_request(request)
+                return scrapy.Request(url=request.url, dont_filter=True, meta=request.meta, callback=request.callback)
+        else:
+            self.count_error = 0
         return response
+
+    def _generate_new_session_for_proxy(self):
+        self.session = random.randint(1, 100000)
+
+    def _add_need_proxy_to_meta_request(self, request):
+        request.meta['need_proxy'] = True
 
     def process_exception(self, request, exception, spider):
         # Called when a download handler or a process_request()

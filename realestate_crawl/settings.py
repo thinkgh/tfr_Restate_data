@@ -66,9 +66,9 @@ create_dir(IMAGES_OUT_DIR)
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'realestate_crawl.middlewares.RealestateCrawlDownloaderMiddleware': 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+   'realestate_crawl.middlewares.RealestateCrawlDownloaderMiddleware': 543,
+}
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
@@ -110,3 +110,5 @@ CONCURRENT_REQUESTS=200
 CONCURRENT_REQUESTS_PER_DOMAIN=10
 RANDOMIZE_DOWNLOAD_DELAY=False
 DONWLOAD_DELAY=1.0
+
+HTTPERROR_ALLOW_ALL = True

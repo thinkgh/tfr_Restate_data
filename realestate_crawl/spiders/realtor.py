@@ -32,11 +32,11 @@ class RealtorSpider(BaseSpider):
     def get_request(self, line):
         return scrapy.Request(
             url=self.REALTOR_SEARCH_URL.format(self.get_address_str(line)),
-            callback=self.parse_realtor_search,
+            callback=self.parse_search,
             meta=self.get_meta_for_request(line),
         )
 
-    def parse_realtor_search(self, response):
+    def parse_search(self, response):
         try:
             resp = json.loads(response.body)
             first_result = resp["autocomplete"][0]

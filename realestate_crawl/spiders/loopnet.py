@@ -8,71 +8,77 @@ import requests
 from scrapy import Spider, Request, Item, Field, FormRequest
 import urllib.request
 import urllib.parse
-from realestate_crawl.settings import INPUT_DIR, IMAGES_OUT_DIR
-from realestate_crawl.utils import format_proxy, download_image, get_proxy_dict, mkdir
+from realestate_crawl.settings import IMAGES_OUT_DIR
+from realestate_crawl.utils import download_image, get_proxy_dict, mkdir
+from realestate_crawl.spiders import *
 
-
-class LoopnetSpider(Spider):
+class LoopnetSpider(BaseSpider):
     name = "loopnet"
 
     custom_settings = {
-        'HTTPPROXY_ENABLED': True,
-        'HTTPERROR_ALLOW_ALL': True,
-        "handle_httpstatus_list": [301, 302, 416, 404],
-        "RETRY_HTTP_CODES": [403],
-        "RETRY_TIMES": 10,
-        'USER_AGENT': "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
-        'DOWNLOADER_MIDDLEWARES': {
-            'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 1
+        'DOWNLOADER_MIDDLEWARES' : {
+            'realestate_crawl.middlewares.LoopnetDownloaderMiddleWare': 543,
+            'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 544,
         }
     }
 
-    def start_requests(self):
-        self.output_dir = IMAGES_OUT_DIR + '/' + self.file_name.split('.')[0]
-        mkdir(self.output_dir)
-        reqs = []
+    def get_request(self, address):
+        data = {
+            "geography": address["address"].replace(" ", "+"),
+            "listingtypes": "1",
+            "categories": "",
+            "advancedSearch": "",
+            "fullAddress": ""
+        }
+        return FormRequest(
+            "https://www.loopnet.com/search",
+            formdata=data,
+            meta={
+                'location_id': address["location_id"],
+                'address_obj': address['address_obj'],
+                'body': json.dumps(data),
+            }, 
+            callback=self.parse_loopnet,
+            errback=self.errback,
+        )
 
-        with open(INPUT_DIR + '/' + self.file_name, 'r') as addr_file:
-            addresses = csv.DictReader(addr_file)
-            for address in addresses:
-                addr = "{}, {}, {} {}".format(
-                    address['Address'], address['City'], address['State'], address['Zip'])
-                reqs.append(
-                    FormRequest(
-                        url="https://www.loopnet.com/search", 
-                        formdata={
-                            "geography": addr.replace(" ", "+"),
-                            "listingtypes": "1",
-                            "categories": "",
-                            "advancedSearch": "",
-                            "fullAddress": ""
-                        }, 
-                        meta={
-                            "address": dict(address),
-                            'proxy': format_proxy()
-                        }, 
-                        callback=self.parse_loopnet
-                    )
-                )
-        return reqs
-
+    def get_price_and_built_year(self, response):
+        price = built_year = None
+        try:
+            context = json.loads(response.xpath('//script[@type="application/ld+json"]/text()').get().strip())
+            try:
+                price = context['about']['price']
+            except:
+                pass
+            try:
+                text = ' '.join(response.css('.property-facts__data-item-text::text').getall())
+                built_year_search = re.search('\s(\d{4})/?\d*\s', text)
+                if built_year_search:
+                    built_year = int(built_year_search.group(1))
+            except:
+                pass
+        except:
+            pass
+        self.save_price_year_built(response.meta['location_id'], price, built_year)
+        
     def parse_loopnet(self, response):
+        yield self.next_request_from_addresses_poll()
         images = response.css(
             '.mosaic-carousel-container ::attr(data-src)').extract()
         if images:
-            print(response.url, images)
-        headers = { 
-            'Referer': response.url,
-            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
-        }
-
-        location_id = response.meta['address']['locationId']
-        for index, image in enumerate(images):
-            proxy_dict = get_proxy_dict()
-            download_image(
-                url=image,
-                image_folder=self.output_dir + '/' + location_id,
-                file_name="{}_loopnet_{}.jpg".format(location_id, index),
-                proxy_dict=proxy_dict,
-                headers=headers
-            )
+            self.get_price_and_built_year(response)
+            headers = { 
+                'Referer': response.url,
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
+            }
+            location_id = response.meta['location_id']
+            for index, image in enumerate(images):
+                download_image(
+                    url=image,
+                    image_folder=self.output_dir + '/' + location_id,
+                    file_name="{}_loopnet_{}.jpg".format(location_id, index),
+                    headers=headers
+                )
+            self.check_exist_images(self.output_dir + '/' + location_id, response)
+        else:
+            self.set_no_images(response)

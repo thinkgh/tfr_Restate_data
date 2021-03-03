@@ -41,8 +41,8 @@ def download_image(url: str, image_folder: pathlib.Path, file_name: str, proxy_d
             image_folder.mkdir(exist_ok=True, parents=True)
             with open(image_folder / file_name, 'wb+') as out_file:
                 out_file.write(downloaded.content)
-    except:
-        pass
+    except Exception as e:
+        print(f"Error when downloading image {url}:", e)
 
 
 def get_output_folder_for_location_id(response):

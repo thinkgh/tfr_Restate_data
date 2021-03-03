@@ -7,3 +7,4 @@
 /twistd.pid
 /project.egg-info/
 /build/
+/venv/

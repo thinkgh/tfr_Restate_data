@@ -23,9 +23,9 @@ class RealtorSpider(BaseSpider):
         "FEED_FORMAT": "csv",
         "FEED_URI": f"{settings.CSV_OUT_DIR}/realtor {utils.get_datetime_now_str()}.csv",
         "FEED_EXPORT_FIELDS": [
-            "Location id", "url", "Beds", "Baths", "Rooms", "House size", "Stories", "Lot size", "Garage",
-            "Heating", "Cooling", "Year built", "Year renovated", "Property type", "Style",
-            "Date updated", "Fireplace", "Flood factor",
+            "Location id", "url", "Price", "Beds", "Baths", "Rooms", "House size", "Stories",
+            "Lot size", "Garage", "Heating", "Cooling", "Year built", "Year renovated",
+            "Property type", "Style", "Date updated", "Fireplace", "Flood factor",
         ]
     }
 
@@ -84,4 +84,14 @@ class RealtorSpider(BaseSpider):
             response.css("#ldp-property-meta li[data-label=property-meta-sqft] ::text").getall()
         )
         data["Flood factor"] = response.css(".ldp-flood-score > b::text").get()
+
+        price = response.css("span.price::text").get()
+        if not price:
+            price_text = utils.get_text_of_selector(
+                response.css(".ldp-header-price span *::text").getall()
+            )
+            if price_text:
+                price = utils.search_with_pattern(r"[$,\d]+", price_text, group=0)
+        data["Price"] = price
+
         return data

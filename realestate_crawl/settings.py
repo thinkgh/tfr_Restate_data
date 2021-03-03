@@ -47,3 +47,4 @@ DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
 
 # Log level
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+LOG_FILE = str(PROJECT_DIR / "log.txt")

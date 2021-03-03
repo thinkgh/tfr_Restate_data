@@ -145,7 +145,7 @@ class LoopnetDownloaderMiddleWare(RealestateCrawlDownloaderMiddleware):
     def get_request_for_block(self, url, request):
         return request
 
-class RealtorDownloaderMiddleware(object):
+class DownloaderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.

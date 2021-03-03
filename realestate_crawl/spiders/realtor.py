@@ -20,10 +20,6 @@ class RealtorSpider(BaseSpider):
 
     custom_settings = {
         "COMPRESSION_ENABLED": False,
-        "DOWNLOADER_MIDDLEWARES": {
-            "realestate_crawl.middlewares.RealtorDownloaderMiddleware": 1,
-            "scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware": 2,
-        },
         "FEED_FORMAT": "csv",
         "FEED_URI": f"{settings.CSV_OUT_DIR}/realtor {utils.get_datetime_now_str()}.csv",
         "FEED_EXPORT_FIELDS": [

@@ -33,7 +33,7 @@ ROBOTSTXT_OBEY = False
 
 # Enable or disable downloader middlewares
 DOWNLOADER_MIDDLEWARES = {
-   'realestate_crawl.middlewares.RealestateCrawlDownloaderMiddleware': 543,
+   'realestate_crawl.middlewares.DownloaderMiddleware': 543,
    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 544,
 }
 

@@ -6,6 +6,9 @@
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 import csv
+
+from scrapy.exceptions import DropItem
+
 from realestate_crawl import settings
 
 
@@ -29,7 +32,7 @@ class ImageLinksPipeline(object):
         for link in item["images"]:
             self.csv_write.writerow([location_id, link])
         self.output_file.flush()
-        return item
+        raise DropItem("Drop item with images link")
 
     def close_spider(self, spider):
         self.output_file.close()

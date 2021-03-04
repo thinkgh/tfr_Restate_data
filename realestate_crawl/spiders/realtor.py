@@ -41,7 +41,7 @@ class RealtorSpider(BaseSpider):
             resp = json.loads(response.body)
             first_result = resp["autocomplete"][0]
         except Exception as e:
-            self.logger.error("Error when getting first result:", e)
+            self.logger.error("Error when getting first result:" + str(e))
             return
         try:
             if first_result.get("area_type") == 'address':
@@ -60,7 +60,7 @@ class RealtorSpider(BaseSpider):
                     meta=response.meta,
                 )
         except Exception as e:
-            self.logger.error("Error when pasring result:", e)
+            self.logger.error("Error when pasring result:" + str(e))
 
     def get_images(self, response: scrapy.http.HtmlResponse):
         links = []
@@ -77,7 +77,7 @@ class RealtorSpider(BaseSpider):
         for text in li_texts:
             text_split = text.split(":")
             if len(text_split) != 2:
-                self.logger.warn("It is weird in get data:", text)
+                self.logger.warn("Warn in pair key-value:" + text)
                 continue
             data[text_split[0]] = text_split[1].strip()
         data["Beds"] = response.css("#ldp-property-meta li[data-label=property-meta-beds] > span::text").get()

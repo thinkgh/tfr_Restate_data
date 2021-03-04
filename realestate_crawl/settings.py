@@ -23,7 +23,7 @@ HTTPPROXY_ENABLED = True
 
 # For retry
 RETRY_TIMES = 10
-RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429, 405]
+RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429, 405, 403]
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
@@ -39,7 +39,7 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 ITEM_PIPELINES = {
-   'realestate_crawl.pipelines.ImageLinksPipeline': 300,
+   'realestate_crawl.pipelines.ImageLinksPipeline': 1,
 }
 
 # Set request filter
@@ -47,4 +47,9 @@ DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
 
 # Log level
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-LOG_FILE = str(PROJECT_DIR / "log.txt")
+LOG_FILE = str(PROJECT_DIR / "log.txt") if os.getenv("LOG_FILE") == True else None
+
+
+FEED_EXPORTERS = {
+   "csv": "realestate_crawl.exporter.MyCSVExporter",
+}

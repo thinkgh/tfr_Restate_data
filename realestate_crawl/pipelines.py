@@ -23,7 +23,7 @@ class ImageLinksPipeline(object):
             self.csv_write.writerow(["id", "link"])
 
     def process_item(self, item, spider):
-        if "images" not in item:
+        if not item.get("images"):
             return item
         location_id = item["location_id"]
         for link in item["images"]:

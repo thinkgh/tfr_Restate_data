@@ -18,6 +18,8 @@ IMAGES_OUT_DIR = OUTPUT_DIR / 'image_links'
 IMAGES_OUT_DIR.mkdir(exist_ok=True, parents=True)
 CSV_OUT_DIR = OUTPUT_DIR / 'csv'
 CSV_OUT_DIR.mkdir(exist_ok=True, parents=True)
+DOWNLOADED_IMG_DIR = OUTPUT_DIR / 'images'
+DOWNLOADED_IMG_DIR.mkdir(exist_ok=True, parents=True)
 
 HTTPPROXY_ENABLED = True
 
@@ -47,7 +49,7 @@ DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
 
 # Log level
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-LOG_FILE = str(PROJECT_DIR / "log.txt") if os.getenv("LOG_FILE") == True else None
+LOG_FILE = str(PROJECT_DIR / "log.txt") if os.getenv("LOG_FILE") == "true" else None
 
 
 FEED_EXPORTERS = {

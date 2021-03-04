@@ -35,7 +35,7 @@ Example:
 
 ## Output
 
-The output include file csv contains data, images (if we set `images=true`) 
+The output include file csv contains data, image links (if we set `images=true`), and real images (if we run crawler `download_images`) 
 
 ### CSV output
 

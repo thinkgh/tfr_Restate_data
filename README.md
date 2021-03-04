@@ -33,10 +33,8 @@ The csv files are exported in folder `output/csv/`.
 
 The name of file are formatted: `<crawler_name> YYYY-MM-DD hh:mm:ss.csv`
 
-- Fields for realtor: `Location id,url,Beds,Baths,Rooms,House size,Stories,Lot size,Garage,Heating,Cooling,Year built,Year renovated,Property type,Style,Date updated,Fireplace,Flood factor`
+- Fields for realtor: `Location id,url,Price,Beds,Baths,Rooms,House size,Stories,Lot size,Garage,Heating,Cooling,Year built,Year renovated,Property type,Style,Date updated,Fireplace,Flood factor`
 
 ### Images output
 
-The images are saved in folder `output/images/<input_file_name>/<location_id>/`
-
-The name of image are formatted: `<location_id>_<crawler_name>_[index].jpg`
+The image links are saved in folder `output/images/<input_file_name>/`

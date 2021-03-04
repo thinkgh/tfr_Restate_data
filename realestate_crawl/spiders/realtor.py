@@ -63,11 +63,13 @@ class RealtorSpider(BaseSpider):
             self.logger.error("Error when pasring result:", e)
 
     def get_images(self, response: scrapy.http.HtmlResponse):
+        links = []
         images = response.css('#ldpHeroCarousel img::attr(data-src)').getall()
-        for index, img in enumerate(images):
+        for img in images:
             # Skip small image
             if 'w60' not in img:
-                self.download_image(img, response.meta["location_id"] , index=index)
+                links.append(img)
+        return links
 
     def get_data(self, response):
         data = {}

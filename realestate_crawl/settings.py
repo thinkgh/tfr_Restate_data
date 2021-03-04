@@ -14,7 +14,7 @@ OUTPUT_DIR = os.getenv('OUTPUT_DIR', PROJECT_DIR / 'output')
 if type(OUTPUT_DIR) == str:
    OUTPUT_DIR = pathlib.Path(OUTPUT_DIR)
 OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
-IMAGES_OUT_DIR = OUTPUT_DIR / 'images'
+IMAGES_OUT_DIR = OUTPUT_DIR / 'image_links'
 IMAGES_OUT_DIR.mkdir(exist_ok=True, parents=True)
 CSV_OUT_DIR = OUTPUT_DIR / 'csv'
 CSV_OUT_DIR.mkdir(exist_ok=True, parents=True)
@@ -39,7 +39,7 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 ITEM_PIPELINES = {
-   'realestate_crawl.pipelines.RealestateCrawlPipeline': 300,
+   'realestate_crawl.pipelines.ImageLinksPipeline': 300,
 }
 
 # Set request filter

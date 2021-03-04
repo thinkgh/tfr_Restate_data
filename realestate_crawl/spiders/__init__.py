@@ -35,14 +35,7 @@ class BaseSpider(scrapy.Spider):
             if field_name in self.params:
                 values.append(line[self.params[field_name]])
         return ", ".join(values)
-
-    def download_image(self, image_url, location_id, index=""):
-        utils.download_image(
-            image_url,
-            image_folder=self.settings["IMAGES_OUT_DIR"] / self.input_file.name / location_id,
-            file_name=f"{location_id}_{self.name}_{index}.jpg"
-        )
-
+  
     def parse_detail_page(self, response: scrapy.http.HtmlResponse):
         data = {
             "Location id": response.meta["location_id"],
@@ -51,7 +44,10 @@ class BaseSpider(scrapy.Spider):
         data.update(self.get_data(response))
         yield data
         if self.images:
-            self.get_images(response)
+            yield {
+                "location_id": response.meta["location_id"],
+                "images": self.get_images(response)
+            }
 
     def get_images(self, response: scrapy.http.HtmlResponse):
         pass

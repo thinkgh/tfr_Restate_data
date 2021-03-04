@@ -23,6 +23,16 @@ Example:
 - scrapy crawl realtor -a input_file=input_csv/huy_example.csv
 - scrapy crawl realtor -a input_file=input_csv/huy_example.csv -a images=true
 
+
+Command for downloading images: `scrapy crawl download_images -a folder_name=<folder_name>`
+
+Params:
+
+- `folder_name`: This is folder name under `output/images_links`
+
+Example:
+- scrapy crawl download_images -a folder_name=huy_example.csv
+
 ## Output
 
 The output include file csv contains data, images (if we set `images=true`) 
@@ -35,6 +45,10 @@ The name of file are formatted: `<crawler_name> YYYY-MM-DD hh:mm:ss.csv`
 
 - Fields for realtor: `Location id,url,Price,Beds,Baths,Rooms,House size,Stories,Lot size,Garage,Heating,Cooling,Year built,Year renovated,Property type,Style,Date updated,Fireplace,Flood factor`
 
-### Images output
+### Images links output
 
 The image links are saved in folder `output/images/<input_file_name>/`
+
+### Images output
+
+When running downloader, the images are saved in folder `output/images/<folder_name>/<location_id>`

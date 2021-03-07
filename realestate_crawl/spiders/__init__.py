@@ -37,17 +37,20 @@ class BaseSpider(scrapy.Spider):
         return ", ".join(values)
   
     def parse_detail_page(self, response: scrapy.http.HtmlResponse):
-        data = {
-            "Location id": response.meta["location_id"],
-            "url": response.url
-        }
-        data.update(self.get_data(response))
-        yield data
-        if self.images:
+        data = self.get_data(response)
+        if data:
             yield {
-                "location_id": response.meta["location_id"],
-                "images": self.get_images(response)
+                "Location id": response.meta["location_id"],
+                "url": response.url,
+                **data
             }
+        if self.images:
+            image_links = self.get_images(response)
+            if image_links:
+                yield {
+                    "location_id": response.meta["location_id"],
+                    "images": image_links
+                }
 
     def get_images(self, response: scrapy.http.HtmlResponse):
         pass

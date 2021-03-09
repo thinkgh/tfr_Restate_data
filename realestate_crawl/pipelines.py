@@ -10,6 +10,7 @@ import csv
 from scrapy.exceptions import DropItem
 
 from realestate_crawl import settings
+import realestate_crawl.utils as utils
 
 
 class ImageLinksPipeline(object):
@@ -36,3 +37,9 @@ class ImageLinksPipeline(object):
 
     def close_spider(self, spider):
         self.output_file.close()
+
+
+class RedfinGetAddressesPipeline(object):
+    def process_item(self, item, spider):
+        with open(settings.CSV_OUT_DIR / f"get address {utils.get_datetime_now_str()}.csv", "wb") as f:
+            f.write(item["body"])

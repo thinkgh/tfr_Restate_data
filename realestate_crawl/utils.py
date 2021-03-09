@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import random
 import pathlib
 import datetime as dt
@@ -73,3 +74,11 @@ def get_text_of_selector(texts):
 def get_datetime_now_str():
     now = dt.datetime.utcnow()
     return now.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def parse_json_string(string: str):
+    try:
+        return json.loads(string)
+    except Exception as e:
+        print("Error when parsing json string: ", string)
+        return {}

@@ -41,5 +41,5 @@ class ImageLinksPipeline(object):
 
 class RedfinGetAddressesPipeline(object):
     def process_item(self, item, spider):
-        with open(settings.CSV_OUT_DIR / f"get address {utils.get_datetime_now_str()}.csv", "wb") as f:
+        with open(settings.CSV_OUT_DIR / f"{spider.name} {utils.get_datetime_now_str()}.csv", "wb") as f:
             f.write(item["body"])

@@ -6,7 +6,7 @@ import realestate_crawl.utils as utils
 class RedfinGetAddressesSpider(scrapy.Spider):
     AUTO_COMPLETE_URL_BASE = "https://www.redfin.com/stingray/do/location-autocomplete?location={}&v=2"
 
-    name = "get_addresses"
+    name = "get_redfin_addresses"
     custom_settings = {
         "ITEM_PIPELINES" : {
             "realestate_crawl.pipelines.RedfinGetAddressesPipeline": 1,

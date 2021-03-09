@@ -52,3 +52,33 @@ The image links are saved in folder `output/images/<input_file_name>/`
 ### Images output
 
 When running downloader, the images are saved in folder `output/images/<folder_name>/<location_id>`
+
+# Get addresses from redfin
+
+## Usage
+
+Command for running crawlers: `scrapy crawl <crawler_name> -a city=<city> -a state=<state> [-a ...]`
+
+Params:
+
+- `crawler_name`: this is name of crawler, one of these values: `get_redfin_addresses`, `get_loopnet_addresses`
+- `city`, `state`: this is city, state. These are required params
+
+Additional params: (If we don't add these params, if will get the default value)
+
+- For redfin:
+    - `min`: this is min price, accepts values in formatted like this: `200k`, `350k`, `2m` , `3m` ,... Default value is `350k`
+    - `max`: this is max price, accepts values in formatted like min price. Defaul value is `2m`
+    - `t`: this is property type, accepted values: `house`, `condo`, `townhouse`, `multifamily`, `land`, `other`. default is `house`. We can do a combination with many values, example: `house+condo`, `house+condo+townhouse`
+    - `s`: this is last sold, acceped values: `1wk`, `1mo`, `3mo`, `6mo`, `1yr`, `2yr`, `3yr`, `4yr`, `5yr`. Default value is `3mo` 
+    - `y`: this is max value of year built. Default is `1999`
+    - `b`: this is basement, accepted values: `finished`, `unfinished`. Default is `finished`
+    - `w`: this is for checkbox Waterfront Only. Accepted values: `yes`, `no`. Default is `no`
+    - `p`: this is for checkbox Must Have Pool. Accepted values: `yes`, `no`. Default is `no`
+
+Some sample commands:
+- `scrapy crawl get_redfin_addresses -a city=Birmingham -a state=Al`
+
+## Output
+
+The output files are csv, under forder `output/csv/` and are named by `<crawler_name> YYYY-MM-DD hh:mm:ss.csv`

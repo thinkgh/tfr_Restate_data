@@ -23,7 +23,7 @@ class RedfinGetAddressesSpider(scrapy.Spider):
             "type": kwargs.get("t", "house"),
             "sold": kwargs.get("s", "3mo"),
             "year_built": kwargs.get("y", "1999"),
-            "basement": kwargs.get("b", "finished"),
+            "basement": kwargs.get("b", None),
             "waterfront": kwargs.get("w", "no"),
             "pool": kwargs.get("p", "no")
         }
@@ -38,8 +38,10 @@ class RedfinGetAddressesSpider(scrapy.Spider):
         filter_str = (
             f"/filter/property-type={self.filter['type']},min-price={self.filter['min']},"
             f"max-price={self.filter['max']},max-year-built={self.filter['year_built']},"
-            f"include=sold-{self.filter['sold']},basement-type={self.filter['basement']}"
+            f"include=sold-{self.filter['sold']}"
         )
+        if self.filter["basement"]:
+            filter_str += f",basement-type={self.filter['basement']}"
         if self.filter["waterfront"] == "yes":
             filter_str += ",water-front"
         if self.filter["pool"] == "yes":

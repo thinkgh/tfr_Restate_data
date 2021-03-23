@@ -1,3 +1,5 @@
+import io
+import csv
 import json
 
 import scrapy
@@ -72,6 +74,30 @@ class RedfinGetAddressesSpider(scrapy.Spider):
         yield {
             "body": response.body
         }
+
+    
+class MergeRedfinGetAddressSpider(scrapy.Spider):
+    name = "merge_get_redfin_addresses"
+    custom_settings = {
+        "DOWNLOADER_MIDDLEWARES": {},
+        "ITEM_PIPELINES" : {
+            "realestate_crawl.pipelines.MergeRedfinGetAddressesPipeline": 1,
+        },
+    }
+    rows = []
+
+    def start_requests(self, **kwargs):
+        for f in self.settings["CSV_OUT_DIR"].iterdir():
+            if not f.is_file() or not f.name.startswith("get_redfin_addresses"):
+                continue
+            yield scrapy.Request(f"file://{str(f.resolve())}")
+
+    def parse(self, response):
+        f = io.StringIO(response.text)
+        csv_file = csv.DictReader(f)
+        for line in csv_file:
+            if line.get("ADDRESS") not in self.rows:
+                self.rows.append(line)
 
 
 class LoopnetGetAddressesSpider(scrapy.Spider):

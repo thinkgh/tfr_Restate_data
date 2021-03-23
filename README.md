@@ -53,7 +53,7 @@ The image links are saved in folder `output/images/<input_file_name>/`
 
 When running downloader, the images are saved in folder `output/images/<folder_name>/<location_id>`
 
-# Get addresses from redfin
+# Get addresses from redfin, loopnet
 
 ## Usage
 
@@ -76,8 +76,22 @@ Additional params: (If we don't add these params, if will get the default value)
     - `w`: this is for checkbox Waterfront Only. Accepted values: `yes`, `no`. Default is `no`
     - `p`: this is for checkbox Must Have Pool. Accepted values: `yes`, `no`. Default is `no`
 
+- For loopnet:
+    - `min`: min price, accepts values in formatted like this: `350000`, `2000000`,.. Default is `null`
+    - `max`: min price, accepts values in formatted like this: `350000`, `2000000`,.. Default is `null`
+    - `t`: this is property type, accepted values: `All`, `Office`, `Industrial`, `Retail`, `Restaurant`, `Shopping Center`, `Multifamily`, `Specialty`, `Health Care`, `Hospitality`, `Sports & Entertainment`, `Land`, `Residential Income`
+    - `ymin`: this min of year built, default is `null`
+    - `ymax`: this max of year built, default is `null`
+    - `cmin`: this min of cap rate, accepted values: `20`, `40`,.. default is `null`
+    - `cmax`: this max of cap rate, accepted values: `20`, `40`,.. default is `null`
+    - `smin`: this min of Building Size (unit in square foot), accepted values: `45000`, `456000`,.. default is `null`
+    - `smax`: this max of Building Size (unit in square foot), accepted values: `45000`, `456000`,.. default is `null`
+    - `c`: this is Condos, accepted values: `include`, `only`, `exclude`. Default is `include`
+
 Some sample commands:
 - `scrapy crawl get_redfin_addresses -a city=Birmingham -a state=Al`
+- `scrapy crawl get_loopnet_addresses -a city=mobile -a state=AL`
+- `scrapy crawl get_loopnet_addresses -a city=mobile -a state=AL -a t=Retail -a min=350000 -a max=1000000`
 
 ## Output
 

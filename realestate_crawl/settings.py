@@ -38,6 +38,8 @@ DOWNLOADER_MIDDLEWARES = {
    'realestate_crawl.middlewares.DownloaderMiddleware': 543,
    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 544,
 }
+if os.getenv("PROXY") == "false":
+   del DOWNLOADER_MIDDLEWARES["scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware"]
 
 # Configure item pipelines
 ITEM_PIPELINES = {

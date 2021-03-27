@@ -17,7 +17,6 @@ class RedfinGetAddressesSpider(scrapy.Spider):
             "realestate_crawl.pipelines.RedfinGetAddressesPipeline": 1,
         },
         "RETRY_TIMES": 20,
-        "DOWNLOADER_MIDDLEWARES": {},
     }
 
     def __init__(self, city, state, **kwargs):
@@ -153,7 +152,6 @@ class LoopnetGetAddressesSpider(scrapy.Spider):
 
     name = "get_loopnet_addresses"
     custom_settings = {
-        "DOWNLOADER_MIDDLEWARES": {},
         "ITEM_PIPELINES": {},
         "FEED_FORMAT": "csv",
         "FEED_URI": f"{settings.CSV_OUT_DIR}/{name} {utils.get_datetime_now_str()}.csv",

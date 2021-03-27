@@ -40,16 +40,26 @@ class ImageLinksPipeline(object):
 
 
 class RedfinGetAddressesPipeline(object):
+    rows = []
+    addresses = []
+
     def process_item(self, item, spider):
-        with open(settings.CSV_OUT_DIR / f"{spider.name} {utils.get_datetime_now_str()}.csv", "wb") as f:
-            f.write(item["body"])
+        if "body" in item:
+            with open(settings.CSV_OUT_DIR / f"{spider.name} {utils.get_datetime_now_str()}.csv", "wb") as f:
+                f.write(item["body"])
+        address = item.get("ADDRESS") 
+        if address and address not in self.addresses:
+            self.addresses.append(address)
+            self.rows.append(item)
+        return item
 
-
-class MergeRedfinGetAddressesPipeline(object):
     def close_spider(self, spider):
-        out_file = settings.CSV_OUT_DIR / f"{spider.name} {utils.get_datetime_now_str()}.csv" 
-        spider.logger.info(f"Writing {len(spider.rows)} lines to {out_file}")
-        with open(out_file, "w") as f:
-            writer = csv.DictWriter(f, fieldnames=spider.rows[0].keys())
-            writer.writeheader()
-            writer.writerows(spider.rows)
+        if self.rows:
+            out_file = settings.CSV_OUT_DIR / f"{spider.name} {utils.get_datetime_now_str()}.csv" 
+            spider.logger.info(f"Writing {len(self.rows)} lines to {out_file}")
+            with open(out_file, "w") as f:
+                writer = csv.DictWriter(f, fieldnames=self.rows[0].keys())
+                writer.writeheader()
+                writer.writerows(self.rows)
+        else:
+            spider.logger.info(f"There are no returned items")

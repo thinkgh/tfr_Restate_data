@@ -17,6 +17,7 @@ class RedfinGetAddressesSpider(scrapy.Spider):
             "realestate_crawl.pipelines.RedfinGetAddressesPipeline": 1,
         },
         "RETRY_TIMES": 20,
+        "DOWNLOADER_MIDDLEWARES": {},
     }
 
     def __init__(self, city, state, **kwargs):
@@ -68,6 +69,35 @@ class RedfinGetAddressesSpider(scrapy.Spider):
         download_url = response.css("#download-and-save::attr(href)").get()
         if download_url:
             yield response.follow(download_url, callback=self.parse_item)
+        else:
+            for div in response.css(".HomeCardContainer"):
+                page_url = div.css("a::attr(href)").get()
+                price = div.css(".homecardV2Price::text").get()
+                home_stats = div.css(".HomeStatsV2 .stats::text").getall()
+                beds = baths = sq_ft = ""
+                try:
+                    beds = home_stats[0].replace("Beds", "").replace("Bed", "").strip()
+                    baths = home_stats[1].replace("Baths", "").replace("Bath", "").strip()
+                    sq_ft = home_stats[2].replace("Sq. Ft.", "").strip()
+                except Exception as e:
+                    self.logger.error("Error when extracting beds, baths, ")
+                address = div.css(".link-and-anchor::text").get()
+                if not page_url:
+                    continue
+                yield {
+                    "URL": response.urljoin(page_url), "ADDRESS": address,
+                    "LAST_SOLD_PRICE": price,
+                    "BEDS": beds, "BATHS": baths, "SQ. FT.": sq_ft
+                }
+            # Try to get next page
+            current_a_tag = response.css(".selected.goToPage")
+            if current_a_tag:
+                next_page = current_a_tag.xpath("following-sibling::a[1]/@href").get()
+                if next_page:
+                    self.logger.info(f"Getting next page : {next_page}")
+                    yield response.follow(next_page, callback=self.parse_search_filter)
+                else:
+                    self.logger.info("Reached end page")
 
     def parse_item(self, response):
         yield {
@@ -80,10 +110,9 @@ class MergeRedfinGetAddressSpider(scrapy.Spider):
     custom_settings = {
         "DOWNLOADER_MIDDLEWARES": {},
         "ITEM_PIPELINES": {
-            "realestate_crawl.pipelines.MergeRedfinGetAddressesPipeline": 1,
+            "realestate_crawl.pipelines.RedfinGetAddressesPipeline": 1,
         },
     }
-    rows = []
 
     def start_requests(self, **kwargs):
         for f in self.settings["CSV_OUT_DIR"].iterdir():
@@ -95,8 +124,7 @@ class MergeRedfinGetAddressSpider(scrapy.Spider):
         f = io.StringIO(response.text)
         csv_file = csv.DictReader(f)
         for line in csv_file:
-            if line.get("ADDRESS") not in self.rows:
-                self.rows.append(line)
+            yield line
 
 
 class LoopnetGetAddressesSpider(scrapy.Spider):
@@ -125,6 +153,7 @@ class LoopnetGetAddressesSpider(scrapy.Spider):
 
     name = "get_loopnet_addresses"
     custom_settings = {
+        "DOWNLOADER_MIDDLEWARES": {},
         "ITEM_PIPELINES": {},
         "FEED_FORMAT": "csv",
         "FEED_URI": f"{settings.CSV_OUT_DIR}/{name} {utils.get_datetime_now_str()}.csv",

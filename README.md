@@ -96,3 +96,9 @@ Some sample commands:
 ## Output
 
 The output files are csv, under forder `output/csv/` and are named by `<crawler_name> YYYY-MM-DD hh:mm:ss.csv`
+
+## Additional infomation
+
+- By default, scripts use proxy. But some script works well without proxy (example: `get_redfin_addresses`, `get_loopnet_addresses`). So if we want to disable proxy, set env variable `PROXY` to `false` : `export PROXY=false`
+- Set env variable `LOG_LEVEL` to `DEBUG` for showing more info during script's running: `export LOG_LEVEL=DEBUG`
+ 

@@ -39,7 +39,7 @@ DOWNLOADER_MIDDLEWARES = {
    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 544,
 }
 if os.getenv("PROXY") == "false":
-   del DOWNLOADER_MIDDLEWARES["scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware"]
+   DOWNLOADER_MIDDLEWARES = {}
 
 # Configure item pipelines
 ITEM_PIPELINES = {

@@ -43,9 +43,12 @@ class RedfinGetAddressesPipeline(object):
     rows = []
     addresses = []
 
+    def _get_output_file(self, spider):
+        return settings.CSV_OUT_DIR / f"{spider.city}_{spider.state}_{spider.name} {utils.get_datetime_now_str()}.csv"
+
     def process_item(self, item, spider):
         if "body" in item:
-            with open(settings.CSV_OUT_DIR / f"{spider.name} {utils.get_datetime_now_str()}.csv", "wb") as f:
+            with open(self._get_output_file(spider) , "wb") as f:
                 f.write(item["body"])
         address = item.get("ADDRESS") 
         if address and address not in self.addresses:
@@ -55,7 +58,7 @@ class RedfinGetAddressesPipeline(object):
 
     def close_spider(self, spider):
         if self.rows:
-            out_file = settings.CSV_OUT_DIR / f"{spider.name} {utils.get_datetime_now_str()}.csv" 
+            out_file = self._get_output_file(spider)
             spider.logger.info(f"Writing {len(self.rows)} lines to {out_file}")
             with open(out_file, "w") as f:
                 writer = csv.DictWriter(f, fieldnames=self.rows[0].keys())

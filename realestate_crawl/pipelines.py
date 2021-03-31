@@ -43,8 +43,17 @@ class RedfinGetAddressesPipeline(object):
     rows = []
     addresses = []
 
+    def _get_output_file_name(self, spider):
+        return f"{spider.city}_{spider.state}_{spider.name} {utils.get_datetime_now_str()}.csv"
+
     def _get_output_file(self, spider):
-        return settings.CSV_OUT_DIR / f"{spider.city}_{spider.state}_{spider.name} {utils.get_datetime_now_str()}.csv"
+        if spider.name == "merge_get_redfin_addresses":
+            out_folder = settings.CSV_OUT_DIR / "merge"
+            out_folder.mkdir(exist_ok=True, parents=True)
+        else:
+            out_folder = settings.CSV_OUT_DIR
+        return out_folder / self._get_output_file_name(spider)
+        
 
     def process_item(self, item, spider):
         if "body" in item:
@@ -60,9 +69,22 @@ class RedfinGetAddressesPipeline(object):
         if self.rows:
             out_file = self._get_output_file(spider)
             spider.logger.info(f"Writing {len(self.rows)} lines to {out_file}")
+            retry_rows = []
             with open(out_file, "w") as f:
                 writer = csv.DictWriter(f, fieldnames=self.rows[0].keys())
                 writer.writeheader()
-                writer.writerows(self.rows)
+                for row in self.rows:
+                    try:
+                        writer.writerow(row)
+                    except Exception as e:
+                        spider.logger.error(f"Error when saving row {row}: {e}")
+                        retry_rows.append(row)
+            if not retry_rows:
+                return
+            # Try to write another csv file with error rows
+            with open(self._get_output_file(spider), "w") as f:
+                writer = csv.DictWriter(f, fieldnames=retry_rows[0].keys())
+                writer.writeheader()
+                writer.writerows(retry_rows)
         else:
             spider.logger.info(f"There are no returned items")

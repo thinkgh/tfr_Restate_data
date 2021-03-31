@@ -10,6 +10,7 @@ import realestate_crawl.settings as settings
 
 class RedfinGetAddressesSpider(scrapy.Spider):
     AUTO_COMPLETE_URL_BASE = "https://www.redfin.com/stingray/do/location-autocomplete?location={}&v=2"
+    DOWNLOAD_URL_BASE = "https://www.redfin.com/stingray/api/gis-csv"
 
     name = "get_redfin_addresses"
     custom_settings = {
@@ -53,6 +54,41 @@ class RedfinGetAddressesSpider(scrapy.Spider):
             filter_str += ",has-pool"
         return filter_str
 
+    def _get_downloaded_csv_url(self, response):
+        market = utils.search_with_pattern("searchMarket = '(\w+)'", response.text, group=1)
+        region_id = utils.search_with_pattern("'region_id': '(\d+)'", response.text, group=1)
+        region_type = utils.search_with_pattern("'region_type_id': '(\d+)'", response.text, group=1)
+        if not market or not region_id or not region_type:
+            self.logger.warn(f"Can not find data market, region data in {response.url}")
+            return
+        # get sold days within
+        if "mo" in self.filter["sold"]:
+            sold_within_days = int(self.filter["sold"].replace("mo", "")) * 30
+        else:
+            sold_within_days = int(self.filter["sold"].replace("yr", "")) * 365
+        filter_str = (
+            f"?al=1&market={market}"
+            f"&max_price={self.filter['max']}&max_year_built={self.filter['year_built']}&min_price={self.filter['min']}"
+            "&min_stories=1&num_homes=100000&ord=redfin-recommended-asc"
+            f"&page_number=1&region_id={region_id}"
+            f"&region_type={region_type}&sold_within_days={sold_within_days}"
+            "&status=9&uipt=1&v=8"
+        )
+        # Add basement
+        if self.filter["basement"] == "finished":
+            filter_str += "&basement_types=1"
+        elif self.filter["basement"] == "unfinished":
+            filter_str += "&basement_types=3"
+        elif self.filter["basement"] == "finished+unfinished" or self.filter["basement"] == "unfinished+finished":
+            filter_str += "&basement_types=0,1,3"
+        # Add pool
+        if self.filter["pool"] == "yes":
+            filter_str += "&pool=true"
+        # Add water-front
+        if self.filter["waterfront"] == "yes":
+            filter_str += "&wf=true"
+        return self.DOWNLOAD_URL_BASE + filter_str
+
     def parse_autocomplete(self, response):
         data = utils.parse_json_string(response.text[4:])
         try:
@@ -67,36 +103,12 @@ class RedfinGetAddressesSpider(scrapy.Spider):
     def parse_search_filter(self, response):
         download_url = response.css("#download-and-save::attr(href)").get()
         if download_url:
-            yield response.follow(download_url, callback=self.parse_item)
+            download_url = download_url.replace("num_homes=350", "num_homes=100000")
         else:
-            for div in response.css(".HomeCardContainer"):
-                page_url = div.css("a::attr(href)").get()
-                price = div.css(".homecardV2Price::text").get()
-                home_stats = div.css(".HomeStatsV2 .stats::text").getall()
-                beds = baths = sq_ft = ""
-                try:
-                    beds = home_stats[0].replace("Beds", "").replace("Bed", "").strip()
-                    baths = home_stats[1].replace("Baths", "").replace("Bath", "").strip()
-                    sq_ft = home_stats[2].replace("Sq. Ft.", "").strip()
-                except Exception as e:
-                    self.logger.error("Error when extracting beds, baths, ")
-                address = div.css(".link-and-anchor::text").get()
-                if not page_url:
-                    continue
-                yield {
-                    "URL": response.urljoin(page_url), "ADDRESS": address,
-                    "LAST_SOLD_PRICE": price,
-                    "BEDS": beds, "BATHS": baths, "SQ. FT.": sq_ft
-                }
-            # Try to get next page
-            current_a_tag = response.css(".selected.goToPage")
-            if current_a_tag:
-                next_page = current_a_tag.xpath("following-sibling::a[1]/@href").get()
-                if next_page:
-                    self.logger.info(f"Getting next page : {next_page}")
-                    yield response.follow(next_page, callback=self.parse_search_filter)
-                else:
-                    self.logger.info("Reached end page")
+            self.logger.warn("There is no download link in page")
+            download_url = self._get_downloaded_csv_url(response)
+        if download_url:
+            yield response.follow(download_url, callback=self.parse_item)
 
     def parse_item(self, response):
         yield {
@@ -113,9 +125,13 @@ class MergeRedfinGetAddressSpider(scrapy.Spider):
         },
     }
 
+    def __init__(self, **kwargs):
+        self.city = kwargs.get("city", "")
+        self.state = kwargs.get("state", "")
+
     def start_requests(self, **kwargs):
         for f in self.settings["CSV_OUT_DIR"].iterdir():
-            if not f.is_file() or not f.name.startswith("get_redfin_addresses"):
+            if not f.is_file() or not f.name.startswith(f"{self.city}_{self.state}_{RedfinGetAddressesSpider.name}"):
                 continue
             yield scrapy.Request(f"file://{str(f.resolve())}")
 

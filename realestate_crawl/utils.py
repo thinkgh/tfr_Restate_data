@@ -60,7 +60,7 @@ def search_with_pattern(pattern, text, group=None):
             if group is not None:
                 result = search.group(group)
             else:
-                result = search.group(1)
+                result = search.group()
     return result
 
 

@@ -101,6 +101,8 @@ class RedfinGetAddressesSpider(scrapy.Spider):
             self.logger.error("Error when getting search url: " + str(e))
 
     def parse_search_filter(self, response):
+        if "No results!" in response.text:
+            return
         download_url = response.css("#download-and-save::attr(href)").get()
         if download_url:
             download_url = download_url.replace("num_homes=350", "num_homes=100000")

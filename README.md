@@ -97,6 +97,19 @@ Some sample commands:
 
 The output files are csv, under forder `output/csv/` and are named by `<crawler_name> YYYY-MM-DD hh:mm:ss.csv`
 
+# Search images and data from [norfolkair](https://air.norfolk.gov/) based on an address
+
+## Usage
+
+Command: `scrapy crawl norfolkair -a address=<address>`
+
+Some sample commands:
+- `scrapy crawl norfolkair -a address='Leicester Ave'`
+
+## Output
+
+The output files are csv, under forder `output/csv/` and are named by `norfolkair YYYY-MM-DD hh:mm:ss.csv`
+
 ## Additional infomation
 
 - By default, scripts use proxy. But some script works well without proxy (example: `get_redfin_addresses`, `get_loopnet_addresses`). So if we want to disable proxy, set env variable `PROXY` to `false` : `export PROXY=false`

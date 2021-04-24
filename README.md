@@ -110,6 +110,8 @@ Some sample commands:
 
 The output files are csv, under forder `output/csv/` and are named by `norfolkair YYYY-MM-DD hh:mm:ss.csv`
 
+Images are in folder `output/images/norfolkair/<address>/<parcel_id>.jpeg`
+
 ## Additional infomation
 
 - By default, scripts use proxy. But some script works well without proxy (example: `get_redfin_addresses`, `get_loopnet_addresses`). So if we want to disable proxy, set env variable `PROXY` to `false` : `export PROXY=false`

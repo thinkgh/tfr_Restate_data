@@ -18,11 +18,13 @@ class Norfolkair(scrapy.Spider):
     HOME_URL = "https://air.norfolk.gov/"
     SEARCH_API = f"{HOME_URL}data/search"
     ITEM_API = f"{HOME_URL}data/propertycard"
-    IMAGE_API_BASE = f"{HOME_URL}images-api.php?type=photo&id=%s&json=1"
+    IMAGE_API_BASE = f"{HOME_URL}images-api.php?type=photo&id=%s"
     FIRST_PAGE = 1
 
     def __init__(self, address):
         self.address = address
+        self.image_output_dir = settings.DOWNLOADED_IMG_DIR / self.name / address
+        self.image_output_dir.mkdir(parents=True, exist_ok=True)
 
     def _get_search_data(self, address, page):
         page = str(page)
@@ -108,25 +110,20 @@ class Norfolkair(scrapy.Spider):
             for sec in section_0:
                 if sec:
                     data.update(sec[0])
+            yield data
             # Get images
             yield scrapy.Request(
                 self.IMAGE_API_BASE % (parcel_id),
                 callback=self.parse_images,
-                meta={"data": data}
+                meta={"parcel_id": parcel_id}
             )
         except Exception as e:
             self.logger.error(f"Error when extracting data from item API {parcel_id}")
 
     def parse_images(self, response):
         """
-        Parse for images API
+        Getting images
         """
-        data = response.meta["data"]
-        images = utils.parse_json_string(response.text)
-        if images is None:
-            self.logger.warn(f"No json data in images API")
-            return
-        data.update({
-            "images": " , ".join(images)
-        })
-        yield data
+        parcel_id = response.meta["parcel_id"]
+        with open(self.image_output_dir / f"{parcel_id}.jpeg", "wb") as f:
+            f.write(response.body)

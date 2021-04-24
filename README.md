@@ -110,7 +110,7 @@ Some sample commands:
 
 The output files are csv, under forder `output/csv/` and are named by `norfolkair YYYY-MM-DD hh:mm:ss.csv`
 
-Images are in folder `output/images/norfolkair/<address>/<parcel_id>.jpeg`
+Images are in folder `output/images/norfolkair/<address>/` with name `<parcel_id>.jpeg`
 
 ## Additional infomation
 

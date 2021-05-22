@@ -188,8 +188,8 @@ class MergeRedfinLocation(scrapy.Spider):
             if url not in self.urls: 
                 self.urls.append(url) 
                 self.rows.append({
-                    "id": str(uuid.uuid4()),
-                    "address": ", ".join([
+                    "locationId": str(uuid.uuid4()),
+                    "Address": ", ".join([
                         str(row["ADDRESS"]),
                         str(row["CITY"]),
                         str(row["STATE OR PROVINCE"]),

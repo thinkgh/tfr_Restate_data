@@ -91,14 +91,25 @@ class RedfinGetAddressesSpider(scrapy.Spider):
 
     def parse_autocomplete(self, response):
         data = utils.parse_json_string(response.text[4:])
+        search_url = None
         try:
             search_url = data["payload"]["exactMatch"]["url"]
+        except Exception as e:
+            self.logger.error("Error when getting exact search url: " + str(e))
+        if not search_url:
+            try:
+                row = data["payload"]["sections"][0]["rows"][0]
+                if row["type"] == "2":
+                    search_url = row["url"]
+            except Exception as e:
+                pass
+        if search_url:
             yield response.follow(
                 search_url + self._get_filter_str(),
                 callback=self.parse_search_filter
             )
-        except Exception as e:
-            self.logger.error("Error when getting search url: " + str(e))
+        else:
+            self.logger.warn("Can not find url")
 
     def parse_search_filter(self, response):
         if "No results!" in response.text:

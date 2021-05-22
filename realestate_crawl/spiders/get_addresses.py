@@ -1,6 +1,8 @@
 import io
 import csv
 import json
+import uuid
+import pathlib
 
 import scrapy
 
@@ -153,6 +155,53 @@ class MergeRedfinGetAddressSpider(scrapy.Spider):
         csv_file = csv.DictReader(f)
         for line in csv_file:
             yield line
+
+
+class MergeRedfinLocation(scrapy.Spider):
+    name = "merge_redfin_location"
+    custom_settings = {
+        "DOWNLOADER_MIDDLEWARES": {},
+        "ITEM_PIPELINES": {},
+    }
+    urls = []
+    rows = []
+
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        spider = super(MergeRedfinLocation, cls).from_crawler(crawler, *args, **kwargs)
+        crawler.signals.connect(spider.spider_closed, scrapy.signals.spider_closed)
+        return spider
+
+    def __init__(self, folder):
+        self.folder = pathlib.Path(folder)
+    
+    def start_requests(self):
+        for f in self.folder.iterdir():
+            if f.is_file() and f.name.endswith("csv"):
+                yield scrapy.Request(f"file://{str(f.resolve())}")
+
+    def parse(self, response):
+        f = io.StringIO(response.text)
+        csv_reader = csv.DictReader(f)
+        for row in csv_reader: 
+            url = row["URL (SEE http://www.redfin.com/buy-a-home/comparative-market-analysis FOR INFO ON PRICING)"] 
+            if url not in self.urls: 
+                self.urls.append(url) 
+                self.rows.append({
+                    "id": str(uuid.uuid4()),
+                    "address": ", ".join([
+                        str(row["ADDRESS"]),
+                        str(row["CITY"]),
+                        str(row["STATE OR PROVINCE"]),
+                        str(row["ZIP OR POSTAL CODE"])
+                    ])
+                })
+
+    def spider_closed(self):
+        with open(self.folder / "merge.csv", "w") as f:
+            csv_writter = csv.DictWriter(f, fieldnames=["id", "address"], delimiter=";") 
+            csv_writter.writeheader()
+            csv_writter.writerows(self.rows)
 
 
 class LoopnetGetAddressesSpider(scrapy.Spider):
